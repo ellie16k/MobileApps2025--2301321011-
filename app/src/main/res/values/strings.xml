@@ -2,5 +2,12 @@
     <string name="app_name">SmartExpenseTrackerApp</string>
     <string name="home_welcome">Welcome to Smart Expense Tracker App</string>
     <string name="add_expense">Add Expense</string>
+    <string-array name="currency_list">
+        <item>BGN</item>
+        <item>EUR</item>
+        <item>USD</item>
+        <item>GBP</item>
+    </string-array>
+
 
 </resources>

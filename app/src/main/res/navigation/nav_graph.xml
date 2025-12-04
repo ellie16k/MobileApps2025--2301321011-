@@ -1,20 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
     app:startDestination="@id/homeFragment">
 
     <fragment
         android:id="@+id/homeFragment"
         android:name="com.example.smartexpensetrackerapp.ui.home.HomeFragment"
-        android:label="Home"
-        tools:layout="@layout/fragment_home" />
+        android:label="Home" />
 
     <fragment
         android:id="@+id/addExpenseFragment"
         android:name="com.example.smartexpensetrackerapp.ui.add.AddExpenseFragment"
-        android:label="Add Expense"
-        tools:layout="@layout/fragment_add_expense" />
+        android:label="Add Expense" />
+
+    <fragment
+        android:id="@+id/addIncomeFragment"
+        android:name="com.example.smartexpensetrackerapp.ui.income.AddIncomeFragment"
+        android:label="Add Income" />
+
+    <fragment
+        android:id="@+id/statsFragment"
+        android:name="com.example.smartexpensetrackerapp.ui.stats.StatisticsFragment"
+        android:label="Statistics" />
+
+    <fragment
+        android:id="@+id/userFragment"
+        android:name="com.example.smartexpensetrackerapp.ui.user.UserFragment"
+        android:label="User" />
 
 </navigation>

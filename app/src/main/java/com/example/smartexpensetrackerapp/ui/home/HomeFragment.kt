@@ -42,6 +42,17 @@ class HomeFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        // Temporary: no UI logic here
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Temporary: no database loading
+    }
+
+
+    /*override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
         // RecyclerView setup
         adapter = ExpenseAdapter(emptyList())
@@ -64,7 +75,7 @@ class HomeFragment : Fragment() {
             binding.textEmpty.visibility =
                 if (expenses.isEmpty()) View.VISIBLE else View.GONE
         }
-    }
+    }*/
 
     override fun onDestroyView() {
         super.onDestroyView()

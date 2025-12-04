@@ -9,5 +9,5 @@ data class Expense(
     val title: String,
     val amount: Double,
     val category: String,
-    val date: Long
+    val date: String,
 )
