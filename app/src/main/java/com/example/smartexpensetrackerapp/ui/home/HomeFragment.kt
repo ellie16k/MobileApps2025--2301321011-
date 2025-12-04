@@ -10,19 +10,21 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.smartexpensetrackerapp.R
-import com.example.smartexpensetrackerapp.data.ExpenseDatabase
-import com.example.smartexpensetrackerapp.data.ExpenseRepository
+import com.example.smartexpensetrackerapp.data.*
 import com.example.smartexpensetrackerapp.databinding.FragmentHomeBinding
-import com.example.smartexpensetrackerapp.viewmodel.ExpenseViewModel
-import com.example.smartexpensetrackerapp.viewmodel.ExpenseViewModelFactory
+import com.example.smartexpensetrackerapp.viewmodel.*
 import kotlinx.coroutines.launch
 
 class HomeFragment : Fragment() {
 
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
-    private lateinit var viewModel: ExpenseViewModel
-    private lateinit var adapter: ExpenseAdapter
+
+    private lateinit var walletViewModel: WalletViewModel
+    private lateinit var walletAdapter: WalletAccountAdapter
+
+    private lateinit var expenseViewModel: ExpenseViewModel
+    private lateinit var recentAdapter: ExpenseAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -31,51 +33,73 @@ class HomeFragment : Fragment() {
     ): View {
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
 
-        // Shared ViewModel across fragments
-        val database = ExpenseDatabase.getDatabase(requireContext())
-        val repository = ExpenseRepository(database.expenseDao())
-        val factory = ExpenseViewModelFactory(repository)
-        viewModel = ViewModelProvider(requireActivity(), factory)[ExpenseViewModel::class.java]
+        val db = ExpenseDatabase.getDatabase(requireContext())
+
+        walletViewModel = ViewModelProvider(
+            requireActivity(),
+            WalletViewModelFactory(WalletRepository(db.walletAccountDao()))
+        )[WalletViewModel::class.java]
+
+        expenseViewModel = ViewModelProvider(
+            requireActivity(),
+            ExpenseViewModelFactory(ExpenseRepository(db.expenseDao()))
+        )[ExpenseViewModel::class.java]
 
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        // Temporary: no UI logic here
-    }
 
-    override fun onResume() {
-        super.onResume()
-        // Temporary: no database loading
-    }
+        setupWalletList()
+        setupRecentList()
+        observeWalletData()
+        loadRecentTransactions()
 
+        binding.buttonAddAccount.setOnClickListener {
+            val sheet = AddAccountBottomSheet()
+            sheet.setOnAccountAddedListener(object : AddAccountBottomSheet.OnAccountAddedListener {
+                override fun onAccountAdded() {
+                }
+            })
+            sheet.show(parentFragmentManager, "addAccountSheet")
+        }
 
-    /*override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
-        // RecyclerView setup
-        adapter = ExpenseAdapter(emptyList())
-        binding.expensesRecyclerView.adapter = adapter
-        binding.expensesRecyclerView.layoutManager = LinearLayoutManager(requireContext())
-
-        binding.fabAddExpense.setOnClickListener {
-            findNavController().navigate(R.id.addExpenseFragment)
+        binding.textSeeMore.setOnClickListener {
+            findNavController().navigate(R.id.transactionsFragment)
         }
     }
 
+    private fun setupWalletList() {
+        walletAdapter = WalletAccountAdapter(emptyList())
+        binding.recyclerAccounts.layoutManager = LinearLayoutManager(requireContext())
+        binding.recyclerAccounts.adapter = walletAdapter
+    }
 
-    override fun onResume() {
-        super.onResume()
+    private fun setupRecentList() {
+        recentAdapter = ExpenseAdapter(emptyList())
+        binding.recyclerRecent.layoutManager = LinearLayoutManager(requireContext())
+        binding.recyclerRecent.adapter = recentAdapter
+    }
 
-        lifecycleScope.launch {
-            val expenses = viewModel.getAllExpenses()
-            adapter.updateData(expenses)
-
-            binding.textEmpty.visibility =
-                if (expenses.isEmpty()) View.VISIBLE else View.GONE
+    private fun observeWalletData() {
+        viewLifecycleOwner.lifecycleScope.launchWhenStarted {
+            walletViewModel.accounts.collect { list ->
+                val b = _binding ?: return@collect
+                walletAdapter.updateData(list)
+                val total = list.sumOf { it.balance }
+                b.textTotalBalance.text = "Total: $total BGN"
+            }
         }
-    }*/
+    }
+
+    private fun loadRecentTransactions() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            val all = expenseViewModel.getAllExpenses()
+            val lastThree = all.takeLast(3).reversed()
+            recentAdapter.updateData(lastThree)
+        }
+    }
 
     override fun onDestroyView() {
         super.onDestroyView()

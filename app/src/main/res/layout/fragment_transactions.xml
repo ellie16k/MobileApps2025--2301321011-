@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!-- TOP BAR WITH BACK + TITLE + SORT + FILTER -->
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/transactionsToolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?attr/colorSurface"
+        app:title="All Transactions"
+        app:titleTextAppearance="@style/TextAppearance.AppCompat.Large"
+        app:navigationIcon="@drawable/ic_arrow_back"
+        app:menu="@menu/menu_transactions" />
+
+    <!-- FULL LIST -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerAllTransactions"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:paddingTop="12dp"/>
+</LinearLayout>

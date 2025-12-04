@@ -29,4 +29,10 @@
         android:name="com.example.smartexpensetrackerapp.ui.user.UserFragment"
         android:label="User" />
 
+    <fragment
+        android:id="@+id/transactionsFragment"
+        android:name="com.example.smartexpensetrackerapp.ui.transactions.TransactionsFragment"
+        android:label="Transactions" />
+
+
 </navigation>
