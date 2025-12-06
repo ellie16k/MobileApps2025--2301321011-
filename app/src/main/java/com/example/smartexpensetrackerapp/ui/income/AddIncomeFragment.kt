@@ -7,10 +7,16 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
+import com.example.smartexpensetrackerapp.R
 import com.example.smartexpensetrackerapp.data.*
 import com.example.smartexpensetrackerapp.databinding.FragmentAddIncomeBinding
+import com.example.smartexpensetrackerapp.ui.categories.CategoryBottomSheet
+import com.example.smartexpensetrackerapp.ui.categories.CategoryType
 import com.example.smartexpensetrackerapp.ui.home.WalletAccountSelectBottomSheet
 import com.example.smartexpensetrackerapp.viewmodel.*
+import kotlinx.coroutines.launch
 import java.util.Calendar
 
 class AddIncomeFragment : Fragment() {
@@ -49,9 +55,9 @@ class AddIncomeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // CATEGORY SELECTOR (income-specific)
+        // CATEGORY SELECTOR — INCOME ONLY
         binding.inputIncomeCategory.setOnClickListener {
-            val sheet = IncomeCategoryBottomSheet { category ->
+            val sheet = CategoryBottomSheet(CategoryType.INCOME) { category ->
                 binding.inputIncomeCategory.setText(category)
             }
             sheet.show(parentFragmentManager, "incomeCategorySheet")
@@ -75,9 +81,7 @@ class AddIncomeFragment : Fragment() {
             val calendar = Calendar.getInstance()
             val dialog = DatePickerDialog(
                 requireContext(),
-                { _, y, m, d ->
-                    binding.inputIncomeDate.setText("$d/${m + 1}/$y")
-                },
+                { _, y, m, d -> binding.inputIncomeDate.setText("$d/${m + 1}/$y") },
                 calendar.get(Calendar.YEAR),
                 calendar.get(Calendar.MONTH),
                 calendar.get(Calendar.DAY_OF_MONTH)
@@ -85,31 +89,32 @@ class AddIncomeFragment : Fragment() {
             dialog.show()
         }
 
-        // SAVE BUTTON
+        // SAVE INCOME
         binding.btnSaveIncome.setOnClickListener {
             val title = binding.inputIncomeTitle.text.toString()
             val category = binding.inputIncomeCategory.text.toString()
             val amount = binding.inputIncomeAmount.text.toString().toDoubleOrNull()
             val date = binding.inputIncomeDate.text.toString()
+            val accId = selectedAccountId
 
-            if (title.isBlank() || category.isBlank() || amount == null ||
-                date.isBlank() || selectedAccountId == null
-            ) return@setOnClickListener
+            if (title.isBlank() || category.isBlank() || amount == null || date.isBlank() || accId == null)
+                return@setOnClickListener
 
-            // store as "income" Expense
-            val income = Expense(
-                title = title,
-                amount = amount,
-                category = category,
-                date = date,
-                isIncome = true
-            )
-            expenseViewModel.addExpense(income)
+            viewLifecycleOwner.lifecycleScope.launch {
+                val income = Expense(
+                    title = title,
+                    category = category,
+                    amount = amount,
+                    date = date,
+                    isIncome = true,
+                    accountId = accId,
+                    currency = selectedAccountCurrency
+                )
+                expenseViewModel.addExpense(income)
+                walletViewModel.addMoney(accId, amount)
 
-            // Add money to selected wallet
-            walletViewModel.addMoney(selectedAccountId!!, amount)
-
-            requireActivity().onBackPressedDispatcher.onBackPressed()
+                findNavController().navigate(R.id.homeFragment)
+            }
         }
     }
 

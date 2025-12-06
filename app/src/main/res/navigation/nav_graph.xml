@@ -34,5 +34,20 @@
         android:name="com.example.smartexpensetrackerapp.ui.transactions.TransactionsFragment"
         android:label="Transactions" />
 
+    <fragment
+        android:id="@+id/expenseDetailsFragment"
+        android:name="com.example.smartexpensetrackerapp.ui.home.ExpenseDetailsFragment"
+        android:label="Details">
+    </fragment>
+
+    <fragment
+        android:id="@+id/editExpenseFragment"
+        android:name="com.example.smartexpensetrackerapp.ui.edit.EditExpenseFragment"
+        android:label="Edit Transaction">
+        <argument
+            android:name="expenseId"
+            app:argType="integer" />
+    </fragment>
+
 
 </navigation>

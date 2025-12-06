@@ -38,7 +38,7 @@ class IncomeCategoryBottomSheet(
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val adapter = CategoryListAdapter(categories) { selected ->
+        val adapter = CategoryListAdapter(categories as MutableList<String>) { selected ->
             onCategorySelected(selected)
             dismiss()
         }

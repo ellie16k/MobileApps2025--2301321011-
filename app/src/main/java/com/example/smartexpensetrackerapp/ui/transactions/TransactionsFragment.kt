@@ -1,7 +1,9 @@
 package com.example.smartexpensetrackerapp.ui.transactions
 
 import android.os.Bundle
-import android.view.*
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import androidx.appcompat.widget.PopupMenu
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
@@ -52,8 +54,15 @@ class TransactionsFragment : Fragment() {
         binding.recyclerAllTransactions.layoutManager = LinearLayoutManager(requireContext())
         binding.recyclerAllTransactions.adapter = adapter
 
+        adapter.onItemClick = { expense ->
+            val bundle = Bundle().apply {
+                putInt("expenseId", expense.id)
+            }
+            findNavController().navigate(R.id.expenseDetailsFragment, bundle)
+        }
+
         // Load Data
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             fullList = viewModel.getAllExpenses().reversed()
             adapter.updateData(fullList)
         }
@@ -66,7 +75,6 @@ class TransactionsFragment : Fragment() {
         // MENU actions
         binding.transactionsToolbar.setOnMenuItemClickListener { item ->
             when (item.itemId) {
-
                 R.id.action_sort -> {
                     showSortMenu()
                     true
@@ -116,10 +124,9 @@ class TransactionsFragment : Fragment() {
 
         popup.setOnMenuItemClickListener { item ->
             val filtered = when (item.title) {
-
-                "Expenses only" -> fullList.filter { it.amount < 0 }
-                "Income only" -> fullList.filter { it.amount > 0 }
-                else -> fullList
+                "Expenses only" -> fullList.filter { !it.isIncome }
+                "Income only"   -> fullList.filter { it.isIncome }
+                else            -> fullList
             }
 
             adapter.updateData(filtered)

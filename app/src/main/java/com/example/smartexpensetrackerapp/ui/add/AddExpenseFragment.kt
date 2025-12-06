@@ -13,9 +13,9 @@ import com.example.smartexpensetrackerapp.R
 import com.example.smartexpensetrackerapp.data.*
 import com.example.smartexpensetrackerapp.databinding.FragmentAddExpenseBinding
 import com.example.smartexpensetrackerapp.ui.categories.CategoryBottomSheet
+import com.example.smartexpensetrackerapp.ui.categories.CategoryType
 import com.example.smartexpensetrackerapp.ui.home.WalletAccountSelectBottomSheet
 import com.example.smartexpensetrackerapp.viewmodel.*
-
 import kotlinx.coroutines.launch
 import java.util.Calendar
 
@@ -27,7 +27,8 @@ class AddExpenseFragment : Fragment() {
     private lateinit var expenseViewModel: ExpenseViewModel
     private lateinit var walletViewModel: WalletViewModel
 
-    private var selectedWalletAccount: WalletAccount? = null
+    private var selectedAccountId: Int? = null
+    private var selectedAccountCurrency: String = "BGN"
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -36,17 +37,17 @@ class AddExpenseFragment : Fragment() {
     ): View {
         _binding = FragmentAddExpenseBinding.inflate(inflater, container, false)
 
-        val database = ExpenseDatabase.getDatabase(requireContext())
+        val db = ExpenseDatabase.getDatabase(requireContext())
 
-        // Expense ViewModel
-        val expenseRepo = ExpenseRepository(database.expenseDao())
-        val expenseFactory = ExpenseViewModelFactory(expenseRepo)
-        expenseViewModel = ViewModelProvider(requireActivity(), expenseFactory)[ExpenseViewModel::class.java]
+        expenseViewModel = ViewModelProvider(
+            requireActivity(),
+            ExpenseViewModelFactory(ExpenseRepository(db.expenseDao()))
+        )[ExpenseViewModel::class.java]
 
-        // Wallet ViewModel
-        val walletRepo = WalletRepository(database.walletAccountDao())
-        val walletFactory = WalletViewModelFactory(walletRepo)
-        walletViewModel = ViewModelProvider(requireActivity(), walletFactory)[WalletViewModel::class.java]
+        walletViewModel = ViewModelProvider(
+            requireActivity(),
+            WalletViewModelFactory(WalletRepository(db.walletAccountDao()))
+        )[WalletViewModel::class.java]
 
         return binding.root
     }
@@ -56,30 +57,31 @@ class AddExpenseFragment : Fragment() {
 
         // CATEGORY SELECTOR
         binding.inputCategory.setOnClickListener {
-            val sheet = CategoryBottomSheet { category ->
+            val sheet = CategoryBottomSheet(CategoryType.EXPENSE) { category ->
                 binding.inputCategory.setText(category)
             }
-            sheet.show(parentFragmentManager, "categorySheet")
+            sheet.show(parentFragmentManager, "expenseCategorySheet")
         }
 
         // WALLET ACCOUNT SELECTOR
         binding.inputWalletAccount.setOnClickListener {
-            lifecycleScope.launch {
-                val accounts = walletViewModel.accounts.value
+            val accounts = walletViewModel.accounts.value
 
-                if (accounts.isEmpty()) {
-                    binding.inputWalletAccount.setText("No accounts")
-                    return@launch
-                }
-
-                WalletAccountSelectBottomSheet(
-                    accounts,
-                    onSelect = { account ->
-                        selectedWalletAccount = account
-                        binding.inputWalletAccount.setText("${account.name} (${account.currency})")
-                    }
-                ).show(parentFragmentManager, "selectAccountSheet")
+            if (accounts.isEmpty()) {
+                binding.inputWalletAccount.error = "No accounts available"
+                return@setOnClickListener
             }
+
+            val sheet = WalletAccountSelectBottomSheet(
+                accounts = accounts,
+                onSelect = { account ->
+                    binding.inputWalletAccount.setText(account.name)
+                    selectedAccountId = account.id
+                    selectedAccountCurrency = account.currency
+                }
+            )
+
+            sheet.show(parentFragmentManager, "expenseAccountSheet")
         }
 
         // DATE PICKER
@@ -87,9 +89,7 @@ class AddExpenseFragment : Fragment() {
             val calendar = Calendar.getInstance()
             val dialog = DatePickerDialog(
                 requireContext(),
-                { _, y, m, d ->
-                    binding.inputDate.setText("$d/${m + 1}/$y")
-                },
+                { _, y, m, d -> binding.inputDate.setText("$d/${m + 1}/$y") },
                 calendar.get(Calendar.YEAR),
                 calendar.get(Calendar.MONTH),
                 calendar.get(Calendar.DAY_OF_MONTH)
@@ -101,29 +101,29 @@ class AddExpenseFragment : Fragment() {
         binding.btnSaveExpense.setOnClickListener {
             val category = binding.inputCategory.text.toString()
             val title = binding.inputTitle.text.toString()
-            val amountText = binding.inputAmount.text.toString()
+            val amount = binding.inputAmount.text.toString().toDoubleOrNull()
             val date = binding.inputDate.text.toString()
+            val accId = selectedAccountId
 
-            if (selectedWalletAccount == null ||
-                category.isBlank() || title.isBlank() ||
-                amountText.isBlank() || date.isBlank()
-            ) return@setOnClickListener
+            if (category.isBlank() || title.isBlank() || amount == null || date.isBlank() || accId == null)
+                return@setOnClickListener
 
-            val amount = amountText.toDoubleOrNull() ?: return@setOnClickListener
+            viewLifecycleOwner.lifecycleScope.launch {
+                val expense = Expense(
+                    title = title,
+                    amount = amount,
+                    category = category,
+                    date = date,
+                    isIncome = false,
+                    accountId = accId,
+                    currency = selectedAccountCurrency
+                )
 
-            val expense = Expense(
-                title = title,
-                category = category,
-                amount = amount,
-                date = date
-            )
-            expenseViewModel.addExpense(expense)
+                expenseViewModel.addExpense(expense)
+                walletViewModel.subtractMoney(accId, amount)
 
-            val wallet = selectedWalletAccount!!
-            val updated = wallet.copy(balance = wallet.balance - amount)
-            walletViewModel.updateAccount(updated)
-
-            findNavController().popBackStack()
+                findNavController().navigate(R.id.homeFragment)
+            }
         }
     }
 

@@ -7,12 +7,18 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.smartexpensetrackerapp.R
-import com.example.smartexpensetrackerapp.data.*
+import com.example.smartexpensetrackerapp.data.ExpenseDatabase
+import com.example.smartexpensetrackerapp.data.ExpenseRepository
+import com.example.smartexpensetrackerapp.data.WalletRepository
 import com.example.smartexpensetrackerapp.databinding.FragmentHomeBinding
-import com.example.smartexpensetrackerapp.viewmodel.*
+import com.example.smartexpensetrackerapp.viewmodel.ExpenseViewModel
+import com.example.smartexpensetrackerapp.viewmodel.ExpenseViewModelFactory
+import com.example.smartexpensetrackerapp.viewmodel.WalletViewModel
+import com.example.smartexpensetrackerapp.viewmodel.WalletViewModelFactory
 import kotlinx.coroutines.launch
 
 class HomeFragment : Fragment() {
@@ -60,6 +66,7 @@ class HomeFragment : Fragment() {
             val sheet = AddAccountBottomSheet()
             sheet.setOnAccountAddedListener(object : AddAccountBottomSheet.OnAccountAddedListener {
                 override fun onAccountAdded() {
+                    // Flow will update UI automatically
                 }
             })
             sheet.show(parentFragmentManager, "addAccountSheet")
@@ -80,15 +87,34 @@ class HomeFragment : Fragment() {
         recentAdapter = ExpenseAdapter(emptyList())
         binding.recyclerRecent.layoutManager = LinearLayoutManager(requireContext())
         binding.recyclerRecent.adapter = recentAdapter
+
+        recentAdapter.onItemClick = { expense ->
+            val bundle = Bundle().apply {
+                putInt("expenseId", expense.id)
+            }
+            findNavController().navigate(R.id.expenseDetailsFragment, bundle)
+        }
     }
 
     private fun observeWalletData() {
-        viewLifecycleOwner.lifecycleScope.launchWhenStarted {
-            walletViewModel.accounts.collect { list ->
-                val b = _binding ?: return@collect
-                walletAdapter.updateData(list)
-                val total = list.sumOf { it.balance }
-                b.textTotalBalance.text = "Total: $total BGN"
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(androidx.lifecycle.Lifecycle.State.STARTED) {
+                walletViewModel.accounts.collect { list ->
+                    walletAdapter.updateData(list)
+
+                    val grouped = list.groupBy { it.currency }
+                    val sortedTotals = grouped.entries
+                        .map { (currency, accounts) ->
+                            currency to accounts.sumOf { it.balance }
+                        }
+                        .sortedByDescending { it.second }
+
+                    val totalText = sortedTotals.joinToString("\n") { (currency, sum) ->
+                        "• %.2f %s".format(sum, currency)
+                    }
+
+                    binding.textTotalBalance.text = "Total:\n$totalText"
+                }
             }
         }
     }

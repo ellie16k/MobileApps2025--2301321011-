@@ -23,5 +23,4 @@ interface WalletAccountDao {
 
     @Query("UPDATE wallet_accounts SET balance = balance + :amount WHERE id = :accountId")
     suspend fun addMoney(accountId: Int, amount: Double)
-
 }

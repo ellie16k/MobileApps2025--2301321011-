@@ -30,10 +30,15 @@ class WalletViewModel(private val repo: WalletRepository) : ViewModel() {
 
     suspend fun getTotalBalance(): Double = repo.getTotalBalance()
 
-    // Add money to a specific wallet
     fun addMoney(accountId: Int, amount: Double) {
         viewModelScope.launch {
             repo.addMoney(accountId, amount)
+        }
+    }
+
+    fun subtractMoney(accountId: Int, amount: Double) {
+        viewModelScope.launch {
+            repo.subtractMoney(accountId, amount)
         }
     }
 }

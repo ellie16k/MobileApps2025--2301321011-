@@ -13,15 +13,23 @@ class WalletRepository(private val dao: WalletAccountDao) {
 
     fun getAllAccounts(): Flow<List<WalletAccount>> = dao.getAllAccounts()
 
+    suspend fun getAccountById(id: Int): WalletAccount? = dao.getAccountById(id)
+
+    
+
     suspend fun getTotalBalance(): Double {
         return dao.getAllAccounts().first().sumOf { it.balance }
     }
 
-    // Add money to specific account
     suspend fun addMoney(accountId: Int, amount: Double) {
-        val list = dao.getAllAccounts().first()
-        val acc = list.firstOrNull { it.id == accountId } ?: return
-        val updated = acc.copy(balance = acc.balance + amount)
+        val account = dao.getAccountById(accountId) ?: return
+        val updated = account.copy(balance = account.balance + amount)
+        dao.updateAccount(updated)
+    }
+
+    suspend fun subtractMoney(accountId: Int, amount: Double) {
+        val account = dao.getAccountById(accountId) ?: return
+        val updated = account.copy(balance = account.balance - amount)
         dao.updateAccount(updated)
     }
 }

@@ -6,29 +6,36 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.smartexpensetrackerapp.databinding.ItemCategoryBinding
 
 class CategoryListAdapter(
-    private val categories: List<String>,
+    private var categories: MutableList<String>,
     private val onClick: (String) -> Unit
-) : RecyclerView.Adapter<CategoryListAdapter.ViewHolder>() {
+) : RecyclerView.Adapter<CategoryListAdapter.CategoryViewHolder>() {
 
-    inner class ViewHolder(val binding: ItemCategoryBinding) :
-        RecyclerView.ViewHolder(binding.root) {
+    inner class CategoryViewHolder(val binding: ItemCategoryBinding)
+        : RecyclerView.ViewHolder(binding.root)
 
-        fun bind(category: String) {
-            binding.txtCategoryName.text = category
-            binding.root.setOnClickListener { onClick(category) }
-        }
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CategoryViewHolder {
+        val binding = ItemCategoryBinding.inflate(
+            LayoutInflater.from(parent.context),
+            parent,
+            false
+        )
+        return CategoryViewHolder(binding)
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val binding = ItemCategoryBinding.inflate(
-            LayoutInflater.from(parent.context), parent, false
-        )
-        return ViewHolder(binding)
+    override fun onBindViewHolder(holder: CategoryViewHolder, position: Int) {
+        val category = categories[position]
+        holder.binding.txtCategoryName.text = category
+
+        holder.binding.root.setOnClickListener {
+            onClick(category)
+        }
     }
 
     override fun getItemCount(): Int = categories.size
 
-    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.bind(categories[position])
+    fun updateList(newList: List<String>) {
+        categories.clear()
+        categories.addAll(newList)
+        notifyDataSetChanged()
     }
 }

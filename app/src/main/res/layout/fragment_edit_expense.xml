@@ -7,20 +7,20 @@
     android:padding="20dp">
 
     <TextView
-        android:id="@+id/titleAdd"
+        android:id="@+id/titleEdit"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="ADD EXPENSE"
+        android:text="EDIT TRANSACTION"
         android:textSize="22sp"
         android:textStyle="bold"
-        android:gravity="center"
+        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"/>
+        android:gravity="center" />
 
     <!-- CATEGORY -->
     <EditText
-        android:id="@+id/inputCategory"
+        android:id="@+id/inputEditCategory"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:hint="Select Category"
@@ -28,52 +28,52 @@
         android:clickable="true"
         android:padding="12dp"
         android:layout_marginTop="32dp"
-        app:layout_constraintTop_toBottomOf="@id/titleAdd"
+        app:layout_constraintTop_toBottomOf="@id/titleEdit"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
-
-    <!-- WALLET ACCOUNT SELECTOR -->
-    <EditText
-        android:id="@+id/inputWalletAccount"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:hint="Paid From Account"
-        android:focusable="false"
-        android:clickable="true"
-        android:padding="12dp"
-        android:layout_marginTop="24dp"
-        app:layout_constraintTop_toBottomOf="@id/inputCategory"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <!-- TITLE -->
     <EditText
-        android:id="@+id/inputTitle"
+        android:id="@+id/inputEditTitle"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:hint="Title"
         android:padding="12dp"
         android:layout_marginTop="24dp"
-        app:layout_constraintTop_toBottomOf="@id/inputWalletAccount"
+        app:layout_constraintTop_toBottomOf="@id/inputEditCategory"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <!-- AMOUNT -->
     <EditText
-        android:id="@+id/inputAmount"
+        android:id="@+id/inputEditAmount"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:hint="Amount"
         android:inputType="numberDecimal"
         android:padding="12dp"
         android:layout_marginTop="24dp"
-        app:layout_constraintTop_toBottomOf="@id/inputTitle"
+        app:layout_constraintTop_toBottomOf="@id/inputEditTitle"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- ACCOUNT -->
+    <EditText
+        android:id="@+id/inputEditAccount"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:hint="Select Account"
+        android:focusable="false"
+        android:clickable="true"
+        android:padding="12dp"
+        android:layout_marginTop="24dp"
+        app:layout_constraintTop_toBottomOf="@id/inputEditAmount"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <!-- DATE -->
     <EditText
-        android:id="@+id/inputDate"
+        android:id="@+id/inputEditDate"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:hint="Select Date"
@@ -81,19 +81,19 @@
         android:clickable="true"
         android:padding="12dp"
         android:layout_marginTop="24dp"
-        app:layout_constraintTop_toBottomOf="@id/inputAmount"
+        app:layout_constraintTop_toBottomOf="@id/inputEditAccount"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <!-- SAVE BUTTON -->
     <Button
-        android:id="@+id/btnSaveExpense"
+        android:id="@+id/btnSaveEdit"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Save"
+        android:text="Save Changes"
         android:layout_marginTop="32dp"
-        app:layout_constraintTop_toBottomOf="@id/inputDate"
+        app:layout_constraintTop_toBottomOf="@id/inputEditDate"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintEnd_toEndOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

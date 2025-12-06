@@ -17,4 +17,13 @@ class ExpenseRepository(private val dao: ExpenseDao) {
     suspend fun getAllExpenses(): List<Expense> {
         return dao.getAllExpenses()
     }
+
+    suspend fun getExpensesForMonth(month: String, year: String): List<Expense> {
+        return dao.getExpensesForMonth(month, year)
+    }
+
+    suspend fun getTotalsByCategory(): List<CategoryTotal> {
+        return dao.getTotalsGroupedByCategory()
+    }
+
 }

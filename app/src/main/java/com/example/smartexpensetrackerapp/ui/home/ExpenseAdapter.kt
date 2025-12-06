@@ -10,6 +10,8 @@ import com.example.smartexpensetrackerapp.databinding.ItemExpenseBinding
 class ExpenseAdapter(private var expenses: List<Expense>) :
     RecyclerView.Adapter<ExpenseAdapter.ExpenseViewHolder>() {
 
+    var onItemClick: ((Expense) -> Unit)? = null
+
     inner class ExpenseViewHolder(val binding: ItemExpenseBinding) :
         RecyclerView.ViewHolder(binding.root)
 
@@ -27,7 +29,9 @@ class ExpenseAdapter(private var expenses: List<Expense>) :
 
         val sign = if (expense.isIncome) "+" else "-"
         val formattedAmount = String.format("%.2f", expense.amount)
-        holder.binding.textAmount.text = "$sign$formattedAmount"
+        val currency = expense.currency ?: ""
+
+        holder.binding.textAmount.text = "$sign$formattedAmount $currency"
 
         val color = if (expense.isIncome) {
             Color.parseColor("#2E7D32")
@@ -39,6 +43,10 @@ class ExpenseAdapter(private var expenses: List<Expense>) :
         holder.binding.textCategory.text = expense.category
         holder.binding.textTitle.text = expense.title
         holder.binding.textDate.text = expense.date
+
+        holder.itemView.setOnClickListener {
+            onItemClick?.invoke(expense)
+        }
     }
 
     override fun getItemCount(): Int = expenses.size
